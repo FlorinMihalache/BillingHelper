@@ -125,15 +125,22 @@ class BillingHelper(
     }
 
     /**
-     * Will start a purchase flow for given sku name. Result will get back to
-     * [PurchasesUpdatedListener]
+     * Will start a purchase flow for given sku name.
+     * ObfuscatedAccountId and obfuscatedProfileId are optional.
+     * Result will get back to [PurchasesUpdatedListener]
      */
-    fun launchPurchaseFlow(activity: Activity, skuName: String) {
+    fun launchPurchaseFlow(activity: Activity, skuName: String, obfuscatedAccountId: String? = null, obfuscatedProfileId: String? = null) {
         val skuDetailsToPurchase = getSkuDetails(skuName)
         if (billingClient.isReady && skuDetailsToPurchase != null) {
-            val flowParams = BillingFlowParams.newBuilder()
-                    .setSkuDetails(skuDetailsToPurchase)
-                    .build()
+            val flowParams = BillingFlowParams.newBuilder().apply {
+                setSkuDetails(skuDetailsToPurchase)
+                obfuscatedAccountId?.let {
+                    setObfuscatedAccountId(it)
+                }
+                obfuscatedProfileId?.let {
+                    setObfuscatedProfileId(it)
+                }
+            }.build()
             // launch flow. Result will be passed to PurchasesUpdatedListener
             billingClient.launchBillingFlow(activity, flowParams)
         } else {
